@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { SignInButton, useUser } from "@clerk/nextjs";
 import type { NextPage } from "next";
 import Head from "next/head";
@@ -14,8 +15,16 @@ import { LoadingPage } from "~/components/loading";
 
 const CreatePostWizard = () => {
   const { user } = useUser();
+  const [input, setInput] = useState("");
 
-  console.log(user);
+  const ctx = api.useContext();
+
+  const { mutate, isLoading: isPosting } = api.posts.create.useMutation({
+    onSuccess: () => {
+      setInput("");
+      ctx.posts.getAll.invalidate();
+    }
+  });
 
   if (!user) return null;
 
@@ -32,7 +41,11 @@ const CreatePostWizard = () => {
         type="text"
         placeholder="Type some emojies!"
         className="bg-transparent grow outline-none"
+        value={input}
+        onChange={e => setInput(e.target.value)}
+        disabled={isPosting}
       />
+      <button onClick={() => mutate({ content: input })}>Post</button>
     </div>
   )
 }
@@ -73,7 +86,7 @@ const Feed = () => {
 
   return (
     <div className="flex flex-col">
-      {[...data, ...data]?.map((fullPost) => (
+      {data.map((fullPost) => (
         <PostView {...fullPost} key={fullPost.post.id} />
       ))}
     </div>
