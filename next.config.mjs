@@ -3,9 +3,10 @@
  * for Docker builds.
  */
 await import("./src/env.mjs");
+import { withAxiom } from "next-axiom";
 
 /** @type {import("next").NextConfig} */
-const config = {
+const config = withAxiom({
   reactStrictMode: true,
   images: {
     domains: ['images.clerk.dev']
@@ -21,5 +22,6 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
-};
+})
+
 export default config;
