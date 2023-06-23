@@ -109,7 +109,7 @@ const Home: NextPage = () => {
           {!isSignedIn && (
             <div className="flex justify-center">
               <SignInButton mode="modal">
-                <button className="btn">
+                <button className="bg-slate-100 text-black p-2 rounded-full">
                   Sign in
                 </button>
               </SignInButton>
