@@ -25,30 +25,32 @@ const ProfileFeed = (props: { userId: string }) => {
   )
 }
 
-const ProfilePage: NextPage<{ username: string }> = ({ username }) => {
+const ProfilePage: NextPage<{ userId: string }> = ({ userId }) => {
   const { data } = api.profile.getUserByUsername.useQuery({
-    username
+    userId
   })
+
+  console.log(data);
 
   if (!data) return <div>404</div>;
 
   return (
     <>
       <Head>
-        <title>{data.username}</title>
+        <title>{data.username ?? data.externalUsername}</title>
       </Head>
       <PageLayout>
         <div className="h-36 bg-slate-600 relative">
           <Image
             src={data.profileImageUrl}
-            alt={`${data.username ?? ""}'s profile picture`}
+            alt={`${data.username}'s profile picture`}
             width={128}
             height={128}
             className="-mb-[64px] absolute bottom-0 left-0 ml-4 rounded-full border-4 border-black bg-black"
           />
         </div>
         <div className="h-[64px]" />
-        <div className="p-4 text-2xl font-bold">{`@${data.username ?? ""}`}</div>
+        <div className="p-4 text-2xl font-bold">{`@${data.username}`}</div>
         <div className="w-full border-b border-slate-400" />
         <ProfileFeed userId={data.id} />
       </PageLayout>
