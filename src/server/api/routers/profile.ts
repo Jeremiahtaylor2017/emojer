@@ -6,7 +6,7 @@ import { z } from "zod";
 import { filterUserForClient } from "~/server/helpers/filterUserForClient";
 
 export const profileRouter = createTRPCRouter({
-    getUserByUsername: publicProcedure
+    getUserById: publicProcedure
         .input(z.object({ userId: z.string() }))
         .query(async ({ input }) => {
             const [user] = await clerkClient.users.getUserList({
@@ -16,10 +16,54 @@ export const profileRouter = createTRPCRouter({
             if (!user) {
                 throw new TRPCError({
                     code: "INTERNAL_SERVER_ERROR",
-                    message: "User not found"
+                    message: "User not found by ID"
                 })
             }
-            console.log("user: ", user);
+            console.log("User: ", user);
+            return filterUserForClient(user);
+        }),
+    getUserByUsername: publicProcedure
+        .input(z.object({ username: z.string() }))
+        .query(async ({ input }) => {
+            const [user] = await clerkClient.users.getUserList({
+                username: [input.username]
+            })
+
+            if (!user) {
+                const users = (await clerkClient.users.getUserList({
+                    limit: 200
+                }))
+                const user = users.find(user => user.externalAccounts.find(email => email.emailAddress.replace(/\@.*/, '') === input.username));
+                console.log(user);
+                if (!user) {
+                    throw new TRPCError({
+                        code: "INTERNAL_SERVER_ERROR",
+                        message: "User not found by username"
+                    })
+                }
+                return filterUserForClient(user);
+            }
+
+            // if (!user) {
+            //     throw new TRPCError({
+            //         code: "INTERNAL_SERVER_ERROR",
+            //         message: "User not found by username"
+            //     })
+            // }
+            // console.log("user: ", user);
+            // .input(z.object({ userId: z.string() }))
+            // .query(async ({ input }) => {
+            //     const [user] = await clerkClient.users.getUserList({
+            //         userId: [input.userId]
+            //     })
+
+            //     if (!user) {
+            //         throw new TRPCError({
+            //             code: "INTERNAL_SERVER_ERROR",
+            //             message: "User not found"
+            //         })
+            //     }
+            //     console.log("user: ", user);
 
             // if (!user) {
             //     const users = (await clerkClient.users.getUserList({
@@ -38,8 +82,8 @@ export const profileRouter = createTRPCRouter({
             //     return filterUserForClient(user);
             // }
 
-            // return filterUserForClient(user);
-            return user;
+            return filterUserForClient(user);
+            // return user;
         })
     // getUserByUsername: publicProcedure
     //     .input(z.object({ username: z.string() }))
