@@ -10,24 +10,46 @@ import { Redis } from "@upstash/redis";
 import type { Post } from "@prisma/client";
 
 const addUserDataToPosts = async (posts: Post[]) => {
+    const userId = posts.map(post => post.authorId);
     const users = (await clerkClient.users.getUserList({
-        userId: posts.map((post) => post.authorId),
-        limit: 100
+        userId: userId,
+        limit: 110
     })).map(filterUserForClient);
 
     return posts.map(post => {
         const author = users.find(user => user.id === post.authorId);
 
-        if (!author || !author.username) throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Author for post not found"
-        })
+        console.log("author:", author);
+
+        if (!author) {
+            console.error("author not found", post);
+            throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: `Author for post not found. POST ID: ${post.id}, USER ID: ${post.authorId}`
+            })
+        }
+
+        if (!author.username) {
+            author.username = author.externalUsername
+        }
+
+        // if (!author.username) {
+        //     if (!author.externalUsername) {
+        //         throw new TRPCError({
+        //             code: "INTERNAL_SERVER_ERROR",
+        //             message: `Author has no account: ${author.id}`
+        //         })
+        //     }
+        //     author.username = author.externalUsername;
+        // }
+
+        console.log("username: ", author.username);
 
         return {
             post,
             author: {
                 ...author,
-                username: author.username
+                username: author.username ?? "(username not found)"
             }
         }
     })

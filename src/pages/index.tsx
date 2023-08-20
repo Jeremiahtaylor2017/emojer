@@ -16,6 +16,7 @@ import { PostView } from "~/components/postview";
 
 const CreatePostWizard = () => {
   const { user } = useUser();
+  console.log(user);
   const [input, setInput] = useState("");
 
   const ctx = api.useContext();
